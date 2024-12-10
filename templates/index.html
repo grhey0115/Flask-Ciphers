@@ -1,8 +1,88 @@
 {% extends "base.html" %}
 {% block content %}
+<style>
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 30px;
+    }
+    .cipher-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .input-section, .output-section {
+        flex: 1;
+        min-width: 300px;
+    }
+    h2 {
+        color: #444;
+        margin-bottom: 15px;
+    }
+    select, input, textarea {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+        background-color: #fff;
+        transition: border-color 0.3s;
+    }
+    select:focus, input:focus, textarea:focus {
+        border-color: #4CAF50;
+    }
+    textarea {
+        height: 150px;
+        resize: vertical;
+    }
+    .buttons {
+        display: flex;
+        gap: 10px;
+    }
+    button {
+        flex: 1;
+        padding: 10px;
+        font-size: 16px;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    .encrypt {
+        background-color: #4CAF50;
+    }
+    .decrypt {
+        background-color: #f44336;
+    }
+    .encrypt:hover {
+        background-color: #45a049;
+    }
+    .decrypt:hover {
+        background-color: #da190b;
+    }
+    #gridContainer {
+        margin-top: 15px;
+    }
+    @media (max-width: 768px) {
+        .cipher-form {
+            flex-direction: column;
+        }
+    }
+</style>
+
 <div class="container">
     <h1>Symmetric Ciphers</h1>
-    
     <div class="cipher-form">
         <div class="input-section">
             <h2>Input</h2>
@@ -14,27 +94,19 @@
                 <option value="double-columnar">Double Columnar Cipher</option>
                 <option value="aes">AES Cipher</option>
             </select>
-            
             <textarea id="inputText" placeholder="Enter text to encrypt/decrypt"></textarea>
             <input type="text" id="key" placeholder="Enter key">
             <input type="text" id="key2" placeholder="Enter 2nd key" style="display: none;">
-
-            
+            <div id="gridContainer" style="display: none;"></div>
             <div class="buttons">
                 <button class="encrypt" onclick="processCipher('encrypt')">Encrypt</button>
                 <button class="decrypt" onclick="processCipher('decrypt')">Decrypt</button>
             </div>
         </div>
-        
         <div class="output-section">
             <h2>Output</h2>
             <textarea id="result" readonly placeholder="Result will appear here"></textarea>
-            
-         
-            
         </div>
-
-       
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

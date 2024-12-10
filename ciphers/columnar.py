@@ -1,113 +1,72 @@
 class SingleColumnar:
     def __init__(self):
-        pass
+        self.last_grid = None
+        self.last_order = None
 
     def _create_grid(self, text, key):
-        """Create and return the columnar grid"""
-        # Get the width from key length
+        """Create and return the columnar grid based on text and key."""
         width = len(key)
-        # Convert spaces to underscores and convert to uppercase
         text = text.upper().replace(' ', '_')
-        
-        # Calculate height
-        height = len(text) // width
-        if len(text) % width != 0:
-            height += 1
-            
-        # Create the grid and fill with text
-        grid = []
-        pos = 0
-        for i in range(height):
-            row = []
-            for j in range(width):
-                if pos < len(text):
-                    row.append(text[pos])
-                else:
-                    row.append('_')  # Padding with underscore instead of X
-                pos += 1
-            grid.append(row)
-            
+
+        # Calculate height and create the grid
+        height = -(-len(text) // width)  # Ceiling division
+        grid = [list(text[i * width:(i + 1) * width].ljust(width, '_')) for i in range(height)]
+
         return grid
 
     def _get_column_order(self, key):
-        """Get the order of columns based on the key"""
-        # Create list of (character, position) pairs
+        """Get the order of columns based on the sorted key."""
         key = key.upper()
-        key_with_positions = [(char, index) for index, char in enumerate(key)]
-        # Sort by character and get original positions
-        sorted_positions = [pos for _, pos in sorted(key_with_positions)]
-        return sorted_positions
+        return [i for _, i in sorted((char, i) for i, char in enumerate(key))]
 
     def encrypt(self, text, key):
         if not text or not key:
-            raise ValueError("Text and key cannot be empty")
-            
-        # Create the grid
+            raise ValueError("Text and key cannot be empty.")
+
         grid = self._create_grid(text, key)
         column_order = self._get_column_order(key)
-        
-        # Read off columns in the order determined by the key
-        result = ''
-        for col in column_order:
-            for row in grid:
-                result += row[col]
-        
-        # Store the grid for visualization
+
+        # Encrypt by reading columns in sorted key order
+        result = ''.join(''.join(row[col] for row in grid) for col in column_order)
+
+        # Store for visualization
         self.last_grid = grid
         self.last_order = column_order
-        
+
         return result.lower()
 
     def decrypt(self, text, key):
         if not text or not key:
-            raise ValueError("Text and key cannot be empty")
-            
+            raise ValueError("Text and key cannot be empty.")
+
         width = len(key)
-        height = len(text) // width
-        if len(text) % width != 0:
-            height += 1
-            
-        # Create empty grid
-        grid = [['' for _ in range(width)] for _ in range(height)]
-        
-        # Get column order
+        height = -(-len(text) // width)  # Ceiling division
         column_order = self._get_column_order(key)
-        
-        # Calculate column lengths (for uneven columns)
-        full_cols = len(text) % width
-        if full_cols == 0:
-            full_cols = width
-            
+
+        # Calculate column lengths for uneven columns
+        full_cols = len(text) % width or width
+        col_heights = [height if i < full_cols else height - 1 for i in range(width)]
+
         # Fill the grid column by column
+        grid = [[''] * width for _ in range(height)]
         pos = 0
-        for col_idx in range(width):
-            # Get the actual column number from the order
-            col = column_order.index(col_idx)
-            # Determine column height
-            col_height = height if col < full_cols else height - 1
-            
-            for row in range(col_height):
-                if pos < len(text):
-                    grid[row][col] = text[pos]
-                    pos += 1
-        
-        # Read off the grid row by row and replace underscores with spaces
-        result = ''
-        for row in grid:
-            result += ''.join(row)
-        
-        # Replace underscores with spaces in the final result
-        result = result.lower().replace('_', ' ').rstrip()  # Remove trailing spaces
-            
-        # Store the grid for visualization
+        for col_idx in column_order:
+            for row in range(col_heights[col_idx]):
+                grid[row][col_idx] = text[pos]
+                pos += 1
+
+        # Decrypt by reading rows
+        result = ''.join(''.join(row) for row in grid).replace('_', ' ').rstrip()
+
+        # Store for visualization
         self.last_grid = grid
         self.last_order = column_order
-        
-        return result
+
+        return result.lower()
 
     def get_visualization_data(self):
-        """Return the grid and column order for visualization"""
-        if hasattr(self, 'last_grid') and hasattr(self, 'last_order'):
+        """Return the grid and column order for visualization."""
+        if self.last_grid is not None and self.last_order is not None:
             # Create formatted string representation
             grid_str = "\nColumnar Grid:\n"
             grid_str += "  " + " ".join(f" {i} " for i in range(len(self.last_grid[0]))) + "\n"
@@ -117,146 +76,74 @@ class SingleColumnar:
             return {
                 'grid': self.last_grid,
                 'column_order': self.last_order,
-                'formatted_grid': grid_str
+                'formatted_grid': grid_str  # Return the formatted grid as well
             }
-        return None 
-    
+        return None
 
 
 class DoubleColumnar:
     def __init__(self):
-        pass
-
-    def _create_grid(self, text, key):
-        """Create and return the columnar grid"""
-        width = len(key)
-        text = text.upper().replace(' ', '_')
-        
-        # Calculate height
-        height = len(text) // width
-        if len(text) % width != 0:
-            height += 1
-            
-        # Create the grid and fill with text
-        grid = []
-        pos = 0
-        for i in range(height):
-            row = []
-            for j in range(width):
-                if pos < len(text):
-                    row.append(text[pos])
-                else:
-                    row.append('_')  # Padding with underscore
-                pos += 1
-            grid.append(row)
-            
-        return grid
-
-    def _get_column_order(self, key):
-        """Get the order of columns based on the key"""
-        key = key.upper()
-        key_with_positions = [(char, index) for index, char in enumerate(key)]
-        sorted_positions = [pos for _, pos in sorted(key_with_positions)]
-        return sorted_positions
+        self.first_grid = None
+        self.second_grid = None
+        self.first_order = None
+        self.second_order = None
 
     def _single_encrypt(self, text, key):
-        """Perform single columnar encryption"""
-        grid = self._create_grid(text, key)
-        column_order = self._get_column_order(key)
-        
-        # Read off columns in the order determined by the key
-        result = ''
-        for col in column_order:
-            for row in grid:
-                result += row[col]
-        
-        return result
+        single = SingleColumnar()
+        return single.encrypt(text, key)
 
     def _single_decrypt(self, text, key):
-        """Perform single columnar decryption"""
-        width = len(key)
-        height = len(text) // width
-        if len(text) % width != 0:
-            height += 1
-            
-        # Create empty grid
-        grid = [['' for _ in range(width)] for _ in range(height)]
-        
-        # Get column order
-        column_order = self._get_column_order(key)
-        
-        # Calculate column lengths
-        full_cols = len(text) % width
-        if full_cols == 0:
-            full_cols = width
-            
-        # Fill the grid column by column
-        pos = 0
-        for col_idx in range(width):
-            col = column_order.index(col_idx)
-            col_height = height if col < full_cols else height - 1
-            
-            for row in range(col_height):
-                if pos < len(text):
-                    grid[row][col] = text[pos]
-                    pos += 1
-        
-        # Read off the grid row by row
-        result = ''
-        for row in grid:
-            result += ''.join(row)
-            
-        return result
+        single = SingleColumnar()
+        return single.decrypt(text, key)
 
-    def encrypt(self, text, key, key2):  # Changed parameter names to match Flask route
-        """Perform double columnar encryption"""
-        if not text or not key or not key2:
-            raise ValueError("Text and both keys cannot be empty")
-            
+    def encrypt(self, text, key1, key2):
+        if not text or not key1 or not key2:
+            raise ValueError("Text and both keys cannot be empty.")
+
         # First encryption
-        first_result = self._single_encrypt(text, key)
-        self.first_grid = self._create_grid(text, key)
-        self.first_order = self._get_column_order(key)
-        
+        first_cipher = SingleColumnar()
+        first_result = first_cipher.encrypt(text, key1)
+        self.first_grid = first_cipher.last_grid
+        self.first_order = first_cipher.last_order
+
         # Second encryption
-        final_result = self._single_encrypt(first_result, key2)
-        self.second_grid = self._create_grid(first_result, key2)
-        self.second_order = self._get_column_order(key2)
-        
+        second_cipher = SingleColumnar()
+        final_result = second_cipher.encrypt(first_result, key2)
+        self.second_grid = second_cipher.last_grid
+        self.second_order = second_cipher.last_order
+
         return final_result.lower()
 
-    def decrypt(self, text, key, key2):  # Changed parameter names to match Flask route
-        """Perform double columnar decryption"""
-        if not text or not key or not key2:
-            raise ValueError("Text and both keys cannot be empty")
-            
+    def decrypt(self, text, key1, key2):
+        if not text or not key1 or not key2:
+            raise ValueError("Text and both keys cannot be empty.")
+
         # Decrypt in reverse order
-        first_result = self._single_decrypt(text, key2)
-        self.second_grid = self._create_grid(first_result, key2)
-        self.second_order = self._get_column_order(key2)
-        
-        final_result = self._single_decrypt(first_result, key)
-        self.first_grid = self._create_grid(final_result, key)
-        self.first_order = self._get_column_order(key)
-        
-        # Replace underscores with spaces and clean up
+        second_cipher = SingleColumnar()
+        first_result = second_cipher.decrypt(text, key2)
+        self.second_grid = second_cipher.last_grid
+        self.second_order = second_cipher.last_order
+
+        first_cipher = SingleColumnar()
+        final_result = first_cipher.decrypt(first_result, key1)
+        self.first_grid = first_cipher.last_grid
+        self.first_order = first_cipher.last_order
+
         return final_result.lower().replace('_', ' ').rstrip()
 
     def get_visualization_data(self):
-        """Return both grids and column orders for visualization"""
-        if hasattr(self, 'first_grid') and hasattr(self, 'second_grid'):
-            # Format first grid
+        """Return both grids and column orders for visualization."""
+        if self.first_grid and self.second_grid:
             first_grid_str = "\nFirst Columnar Grid:\n"
             first_grid_str += "  " + " ".join(f" {i} " for i in range(len(self.first_grid[0]))) + "\n"
             for i, row in enumerate(self.first_grid):
                 first_grid_str += f"{i} " + " ".join(f"[{cell}]" for cell in row) + "\n"
-            
-            # Format second grid
+
             second_grid_str = "\nSecond Columnar Grid:\n"
             second_grid_str += "  " + " ".join(f" {i} " for i in range(len(self.second_grid[0]))) + "\n"
             for i, row in enumerate(self.second_grid):
                 second_grid_str += f"{i} " + " ".join(f"[{cell}]" for cell in row) + "\n"
-            
+
             return {
                 'first_grid': self.first_grid,
                 'first_order': self.first_order,
