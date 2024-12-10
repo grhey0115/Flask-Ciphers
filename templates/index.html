@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h1>Symmetric Ciphers</h1>
+    
+    <div class="cipher-form">
+        <div class="input-section">
+            <h2>Input</h2>
+            <select id="cipherType">
+                <option value="caesar">Caesar Cipher</option>
+                <option value="vigenere">Vigenère Cipher</option>
+                <option value="playfair">Playfair Cipher</option>
+                <option value="single-columnar">Single Columnar Cipher</option>
+                <option value="double-columnar">Double Columnar Cipher</option>
+                <option value="aes">AES Cipher</option>
+            </select>
+            
+            <textarea id="inputText" placeholder="Enter text to encrypt/decrypt"></textarea>
+            <input type="text" id="key" placeholder="Enter key">
+            <input type="text" id="key2" placeholder="Enter 2nd key" style="display: none;">
+
+            
+            <div class="buttons">
+                <button class="encrypt" onclick="processCipher('encrypt')">Encrypt</button>
+                <button class="decrypt" onclick="processCipher('decrypt')">Decrypt</button>
+            </div>
+        </div>
+        
+        <div class="output-section">
+            <h2>Output</h2>
+            <textarea id="result" readonly placeholder="Result will appear here"></textarea>
+            
+         
+            
+        </div>
+
+       
+    </div>
+</div>
+{% endblock %} 
