@@ -200,7 +200,6 @@
         background: var(--input-bg);
         border: 1px solid var(--border-color);
     }
-
     /* Solution Panel */
     .solution-panel {
         margin-top: 2rem;
@@ -226,7 +225,6 @@
         justify-content: center;
         margin-right: 0.5rem;
     }
-
     /* Statistics Panel */
     .statistics-panel {
         margin-top: 2rem;
@@ -238,7 +236,6 @@
         gap: 1rem;
         margin-bottom: 1rem;
     }
-
     .stat-card {
         background: var(--input-bg);
         border-radius: 0.75rem;
@@ -319,7 +316,7 @@
             
             <div class="input-group">
                 <label for="cipherType">Encryption Method</label>
-                <select id="cipherType" class="styled-select" onchange="updatePlaceholders(this.value)">
+                <select id="cipherType" class="styled-select">
                     <option value="caesar">Caesar Cipher</option>
                     <option value="vigenere">Vigenère Cipher</option>
                     <option value="playfair">Playfair Cipher</option>
@@ -335,7 +332,6 @@
                     id="inputText" 
                     placeholder="Enter the message you want to encrypt or decrypt..."
                     rows="6"
-                    oninput="updateStatistics()"
                 ></textarea>
             </div>
 
@@ -346,7 +342,6 @@
                         type="text" 
                         id="key" 
                         placeholder="Enter your secret key"
-                        oninput="updateKeyStrength()"
                     >
                 </div>
                 
@@ -391,6 +386,7 @@
             <div class="statistics-panel">
                 <h3>Statistics</h3>
                 <div class="stat-grid">
+                   
                     <div class="stat-card">
                         <h4>Key Strength</h4>
                         <div id="keyStrength">0%</div>
@@ -403,11 +399,11 @@
             </div>
 
             <div class="button-container">
-                <button class="btn" onclick="showSolution()">
+                <button class="btn encrypt"  onclick="showSolution()">
                     <i class="fas fa-lightbulb"></i>
                     <span>Show Solution</span>
                 </button>
-                <button class="btn" onclick="copyResult()">
+                <button class="btn decrypt" onclick="copyResult()">
                     <i class="fas fa-copy"></i>
                     <span>Copy Result</span>
                 </button>
@@ -415,8 +411,8 @@
         </div>
     </div>
 
-    <!-- Solution Panel -->
-    <div id="solutionPanel" class="panel solution-panel">
+      <!-- Solution Panel -->
+      <div id="solutionPanel" class="panel solution-panel">
         <div class="panel-header">
             <h2>Solution Steps</h2>
         </div>
@@ -444,6 +440,17 @@
         </div>
     </div>
 </div>
+</div>
+
+
+            <div class="visualization-container">
+                <div id="gridContainer" class="viz-box"></div>
+                <div id="singleGridContainer" class="viz-box"></div>
+                <div id="aesInfoContainer" class="viz-box"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
 function toggleTheme() {
@@ -465,25 +472,16 @@ function copyResult() {
 }
 
 function showSuccess(message) {
+    // Implement success notification
     console.log(message); // Replace with better UI notification
 }
 
+// Utility Functions
 function showError(message) {
+    // Implement error notification
     alert(message); // Replace with better UI notification
 }
 
-// Function to generate solution steps
-function generateSolutionSteps(method, input, key) {
-    const steps = {
-        1: `Processing input: "${input}"`,
-        2: `Using key: "${key}"`,
-        3: `Applying ${method} algorithm`,
-        4: `Output generated successfully`
-    };
-    return steps;
-}
-
-// Update solution steps based on the cipher method
 function updateSolutionSteps(method, input, key) {
     const steps = generateSolutionSteps(method, input, key);
     Object.entries(steps).forEach(([step, content]) => {
@@ -526,13 +524,13 @@ function updateKeyStrength() {
 }
 
 // Statistics and Analysis
-function updateStatistics() {
+function updateStatistics(processingTime = 0) {
     const input = document.getElementById('inputText').value;
     document.getElementById('charCount').textContent = input.length;
+    document.getElementById('processingTime').textContent = `${Math.round(processingTime)} ms`;
     updateKeyStrength();
 }
 
-// Validation Functions
 function validateKey(key, cipherType) {
     if (!key) return false;
     
@@ -564,25 +562,6 @@ function validateInput(input, cipherType) {
             return true;
     }
 }
-
-// Cipher Implementations
-function processCaesarCipher(text, key, action) {
-    const shift = parseInt(key) % 26;
-    return text.split('').map(char => {
-        if (!/[a-zA-Z]/.test(char)) return char;
-        
-        const code = char.charCodeAt(0);
-        const isUpperCase = code >= 65 && code <= 90;
-        const base = isUpperCase ? 65 : 97;
-        
-        let newCode = action === 'encrypt' ?
-            ((code - base + shift) % 26) + base :
-            ((code - base - shift + 26) % 26) + base;
-            
-        return String.fromCharCode(newCode);
-    }).join('');
-}
-
 function processVigenereCipher(text, key, action) {
     const keyRepeated = key.toUpperCase().repeat(Math.ceil(text.length / key.length));
     
@@ -600,6 +579,93 @@ function processVigenereCipher(text, key, action) {
             
         return String.fromCharCode(newCode);
     }).join('');
+}// Cipher Implementations
+function processCaesarCipher(text, key, action) {
+    const shift = parseInt(key) % 26;
+    return text.split('').map(char => {
+        if (!/[a-zA-Z]/.test(char)) return char;
+        
+        const code = char.charCodeAt(0);
+        const isUpperCase = code >= 65 && code <= 90;
+        const base = isUpperCase ? 65 : 97;
+        
+        let newCode = action === 'encrypt' ?
+            ((code - base + shift) % 26) + base :
+            ((code - base - shift + 26) % 26) + base;
+            
+        return String.fromCharCode(newCode);
+    }).join('');
 }
+
+function updatePlaceholders(cipherType) {
+    const keyInput = document.getElementById('key');
+    switch(cipherType) {
+        case 'caesar':
+            keyInput.placeholder = 'Enter shift value (0-25)';
+            break;
+        case 'vigenere':
+            keyInput.placeholder = 'Enter keyword (letters only)';
+            break;
+        case 'playfair':
+            keyInput.placeholder = 'Enter keyword for Playfair matrix';
+            break;
+        case 'aes':
+            keyInput.placeholder = 'Enter 32 character key';
+            break;
+        default:
+            keyInput.placeholder = 'Enter encryption key';
+    }
+}
+
+// Cipher Processing
+function processCipher(action) {
+    const startTime = performance.now();
+    const cipherType = document.getElementById('cipherType').value;
+    const input = document.getElementById('inputText').value;
+    const key = document.getElementById('key').value;
+    const key2 = document.getElementById('key2')?.value;
+    
+    if (!validateInput(input, cipherType)) {
+        showError('Invalid input for selected cipher');
+        return;
+    }
+    
+    if (!validateKey(key, cipherType)) {
+        showError('Invalid key for selected cipher');
+        return;
+    }
+    
+    let result;
+    try {
+        switch(cipherType) {
+            case 'caesar':
+                result = processCaesarCipher(input, key, action);
+                break;
+            case 'vigenere':
+                result = processVigenereCipher(input, key, action);
+                break;
+            case 'playfair':
+                result = processPlayfairCipher(input, key, action);
+                break;
+            case 'single-columnar':
+                result = processColumnarCipher(input, key, action, false);
+                break;
+            case 'double-columnar':
+                result = processColumnarCipher(input, key, action, true, key2);
+                break;
+            case 'aes':
+                result = processAESCipher(input, key, action);
+                break;
+        }
+        
+        document.getElementById('result').value = result;
+        updateStatistics(performance.now() - startTime);
+        showSuccess(`${action === 'encrypt' ? 'Encryption' : 'Decryption'} successful`);
+        
+    } catch (error) {
+        showError('Processing error: ' + error.message);
+    }
+}
+
 </script>
 {% endblock %}
