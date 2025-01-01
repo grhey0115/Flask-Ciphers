@@ -1,111 +1,85 @@
 {% extends "base.html" %}
 {% block content %}
-<style>
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-    h1 {
-        text-align: center;
-        color: #333;
-        margin-bottom: 30px;
-    }
-    .cipher-form {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        background-color: #f9f9f9;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-    .input-section, .output-section {
-        flex: 1;
-        min-width: 300px;
-    }
-    h2 {
-        color: #444;
-        margin-bottom: 15px;
-    }
-    select, input, textarea {
-        width: 100%;
-        padding: 10px;
-        margin-bottom: 15px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 16px;
-        background-color: #fff;
-        transition: border-color 0.3s;
-    }
-    select:focus, input:focus, textarea:focus {
-        border-color: #4CAF50;
-    }
-    textarea {
-        height: 150px;
-        resize: vertical;
-    }
-    .buttons {
-        display: flex;
-        gap: 10px;
-    }
-    button {
-        flex: 1;
-        padding: 10px;
-        font-size: 16px;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-    .encrypt {
-        background-color: #4CAF50;
-    }
-    .decrypt {
-        background-color: #f44336;
-    }
-    .encrypt:hover {
-        background-color: #45a049;
-    }
-    .decrypt:hover {
-        background-color: #da190b;
-    }
-    #gridContainer {
-        margin-top: 15px;
-    }
-    @media (max-width: 768px) {
-        .cipher-form {
-            flex-direction: column;
-        }
-    }
-</style>
+<div class="page-container">
+    <header class="header">
+        <h1>Symmetric Ciphers</h1>
+        <p class="subtitle">Secure encryption and decryption tools</p>
+    </header>
 
-<div class="container">
-    <h1>Symmetric Ciphers</h1>
-    <div class="cipher-form">
-        <div class="input-section">
-            <h2>Input</h2>
-            <select id="cipherType">
-                <option value="caesar">Caesar Cipher</option>
-                <option value="vigenere">Vigenère Cipher</option>
-                <option value="playfair">Playfair Cipher</option>
-                <option value="single-columnar">Single Columnar Cipher</option>
-                <option value="double-columnar">Double Columnar Cipher</option>
-                <option value="aes">AES Cipher</option>
-            </select>
-            <textarea id="inputText" placeholder="Enter text to encrypt/decrypt"></textarea>
-            <input type="text" id="key" placeholder="Enter key">
-            <input type="text" id="key2" placeholder="Enter 2nd key" style="display: none;">
-            <div id="gridContainer" style="display: none;"></div>
-            <div class="buttons">
-                <button class="encrypt" onclick="processCipher('encrypt')">Encrypt</button>
-                <button class="decrypt" onclick="processCipher('decrypt')">Decrypt</button>
+    <div class="main-container">
+        <!-- Input Panel -->
+        <div class="panel input-panel">
+            <div class="panel-header">
+                <h2>Input</h2>
+            </div>
+            
+            <div class="cipher-selector">
+                <label for="cipherType">Select Cipher Method</label>
+                <select id="cipherType" class="styled-select">
+                    <option value="caesar">Caesar Cipher</option>
+                    <option value="vigenere">Vigenère Cipher</option>
+                    <option value="playfair">Playfair Cipher</option>
+                    <option value="single-columnar">Single Columnar</option>
+                    <option value="double-columnar">Double Columnar</option>
+                    <option value="aes">AES Cipher</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="inputText">Message</label>
+                <textarea 
+                    id="inputText" 
+                    placeholder="Enter your message here..."
+                    rows="6"
+                ></textarea>
+            </div>
+
+            <div class="key-container">
+                <div class="key-group">
+                    <label for="key">Encryption Key</label>
+                    <input type="text" id="key" placeholder="Enter your key">
+                </div>
+                
+                <div class="key-group" id="key2Container" style="display: none;">
+                    <label for="key2">Second Key (Double Columnar)</label>
+                    <input type="text" id="key2" placeholder="Enter second key for Double Columnar">
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button class="btn encrypt" onclick="processCipher('encrypt')">
+                    <i class="fas fa-lock"></i>
+                    <span>Encrypt</span>
+                </button>
+                <button class="btn decrypt" onclick="processCipher('decrypt')">
+                    <i class="fas fa-unlock"></i>
+                    <span>Decrypt</span>
+                </button>
             </div>
         </div>
-        <div class="output-section">
-            <h2>Output</h2>
-            <textarea id="result" readonly placeholder="Result will appear here"></textarea>
+
+        <!-- Output Panel -->
+        <div class="panel output-panel">
+            <div class="panel-header">
+                <h2>Output</h2>
+            </div>
+
+            <div class="result-group">
+                <label for="result">Result</label>
+                <textarea 
+                    id="result" 
+                    readonly 
+                    placeholder="Result will appear here..."
+                    rows="6"
+                ></textarea>
+            </div>
+
+            <!-- Visualization Containers -->
+            <div class="visualization-container">
+                <div id="gridContainer" class="viz-box"></div>
+                <div id="singleGridContainer" class="viz-box"></div>
+                <div id="aesInfoContainer" class="viz-box"></div>
+            </div>
         </div>
     </div>
 </div>

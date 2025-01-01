@@ -16,19 +16,18 @@ def encrypt():
         data = request.get_json()
         text = data.get('text', '')
         key = data.get('key', '')
+        key2 = data.get('key2', '')  # Get the second key
         cipher_type = data.get('cipher_type', '')
 
         if not text:
             return jsonify({'success': False, 'error': 'Text cannot be empty'})
 
-        # Process encryption based on the cipher type
         if cipher_type == 'double-columnar':
-            if not key:
-                return jsonify({'success': False, 'error': 'Key is required for Double-Columnar cipher'})
+            if not key or not key2:
+                return jsonify({'success': False, 'error': 'Both keys are required for Double Columnar cipher'})
             cipher = DoubleColumnar()
-            result = cipher.encrypt(text, key)
-            viz_data = cipher.get_visualization_data()
-            return jsonify({'success': True, 'result': result, 'visualization': viz_data})
+            result = cipher.encrypt(text, key, key2)  # Pass both keys
+            return jsonify({'success': True, 'result': result})
 
         elif cipher_type == 'caesar':
             if not key.isdigit():
@@ -74,6 +73,7 @@ def decrypt():
         data = request.get_json()
         text = data.get('text', '')
         key = data.get('key', '')
+        key2 = data.get('key2', '')  # Get the second key
         cipher_type = data.get('cipher_type', '')
 
         if not text:
@@ -81,12 +81,11 @@ def decrypt():
 
         # Process decryption based on the cipher type
         if cipher_type == 'double-columnar':
-            if not key:
-                return jsonify({'success': False, 'error': 'Key is required for Double-Columnar cipher'})
+            if not key or not key2:
+                return jsonify({'success': False, 'error': 'Both keys are required for Double Columnar cipher'})
             cipher = DoubleColumnar()
-            result = cipher.decrypt(text, key)
-            viz_data = cipher.get_visualization_data()
-            return jsonify({'success': True, 'result': result, 'visualization': viz_data})
+            result = cipher.decrypt(text, key, key2)  # Pass both keys
+            return jsonify({'success': True, 'result': result})
 
         elif cipher_type == 'caesar':
             if not key.isdigit():

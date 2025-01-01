@@ -154,3 +154,36 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Hide second key container by default
+    const key2Container = document.getElementById('key2Container');
+    key2Container.style.display = 'none';
+
+    // Add event listener for cipher type changes
+    document.getElementById('cipherType').addEventListener('change', function(e) {
+        const key2Container = document.getElementById('key2Container');
+        const gridContainer = document.getElementById('gridContainer');
+        const singleGridContainer = document.getElementById('singleGridContainer');
+        const aesInfoContainer = document.getElementById('aesInfoContainer');
+        
+        // Hide all visualization containers
+        gridContainer.style.display = 'none';
+        singleGridContainer.style.display = 'none';
+        aesInfoContainer.style.display = 'none';
+        
+        // Show/hide second key input only for double columnar
+        if (e.target.value === 'double-columnar') {
+            key2Container.style.display = 'block';
+            // Optional: Add animation
+            key2Container.style.opacity = '0';
+            setTimeout(() => {
+                key2Container.style.opacity = '1';
+            }, 50);
+        } else {
+            key2Container.style.display = 'none';
+            document.getElementById('key2').value = ''; // Clear second key value
+        }
+    });
+});
+
