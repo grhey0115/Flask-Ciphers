@@ -3,6 +3,7 @@ from ciphers.caesar import Caesar
 from ciphers.vigenere import Vigenere
 from ciphers.playfair import Playfair
 from ciphers.columnar import SingleColumnar, DoubleColumnar
+from ciphers.aes import AESCipher
 
 app = Flask(__name__)
 
@@ -51,6 +52,18 @@ def encrypt():
             if not key:
                 return jsonify({'success': False, 'error': 'Key is required for Single Columnar cipher'})
             cipher = SingleColumnar()
+            result = cipher.encrypt(text, key)
+            viz_data = cipher.get_visualization_data()
+            return jsonify({
+                'success': True, 
+                'result': result, 
+                'visualization': viz_data
+            })
+
+        elif cipher_type == 'aes':
+            if not key:
+                return jsonify({'success': False, 'error': 'Key is required for AES cipher'})
+            cipher = AESCipher()
             result = cipher.encrypt(text, key)
             viz_data = cipher.get_visualization_data()
             return jsonify({
@@ -110,6 +123,18 @@ def decrypt():
                 return jsonify({'success': False, 'error': 'Key is required for Single Columnar cipher'})
             cipher = SingleColumnar()
             result = cipher.decrypt(text, key)
+            viz_data = cipher.get_visualization_data()
+            return jsonify({
+                'success': True, 
+                'result': result, 
+                'visualization': viz_data
+            })
+
+        elif cipher_type == 'aes':
+            if not key:
+                return jsonify({'success': False, 'error': 'Key is required for AES cipher'})
+            cipher = AESCipher()
+            result = cipher.decrypt(text, key)  # Pass both keys    
             viz_data = cipher.get_visualization_data()
             return jsonify({
                 'success': True, 

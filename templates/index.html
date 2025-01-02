@@ -1,671 +1,674 @@
 {% extends "base.html" %}
 {% block content %}
-<style>
-    /* Light/Dark mode variables */
-    :root {
-        /* Light theme */
-        --primary-color: #2563eb;
-        --primary-hover: #1d4ed8;
-        --background: #f0f7ff;
-        --card-bg: #ffffff;
-        --panel-bg: #ffffff;
-        --text-primary: #1e293b;
-        --text-secondary: #64748b;
-        --border-color: #e2e8f0;
-        --input-bg: #f8fafc;
-        --success: #22c55e;
-        --error: #ef4444;
-        --shadow-color: rgba(0, 0, 0, 0.1);
-        --gradient-start: #2563eb;
-        --gradient-end: #7c3aed;
-    }
-
-    /* Dark theme */
-    [data-theme="dark"] {
-        --primary-color: #3b82f6;
-        --primary-hover: #60a5fa;
-        --background: #0f172a;
-        --card-bg: #1e293b;
-        --panel-bg: #1e293b;
-        --text-primary: #f1f5f9;
-        --text-secondary: #94a3b8;
-        --border-color: #334155;
-        --input-bg: #273548;
-        --success: #4ade80;
-        --error: #f87171;
-        --shadow-color: rgba(0, 0, 0, 0.3);
-        --gradient-start: #3b82f6;
-        --gradient-end: #8b5cf6;
-    }
-
-    body {
-        font-family: 'Inter', system-ui, sans-serif;
-        background-color: var(--background);
-        margin: 0;
-        padding: 20px;
-        color: var(--text-primary);
-        line-height: 1.7;
-        transition: background-color 0.3s ease, color 0.3s ease;
-    }
-
-    /* Theme toggle button */
-    .theme-toggle {
-        position: fixed;
-        top: 1rem;
-        right: 1rem;
-        padding: 0.75rem;
-        border-radius: 9999px;
-        background: var(--card-bg);
-        border: 2px solid var(--border-color);
-        color: var(--text-primary);
-        cursor: pointer;
-        box-shadow: 0 4px 12px var(--shadow-color);
-        transition: all 0.3s ease;
-    }
-
-    .theme-toggle:hover {
-        transform: scale(1.1);
-    }
-
-    .page-container {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 2rem;
-    }
-
-    .header {
-        text-align: center;
-        margin-bottom: 3rem;
-        padding: 2rem 0;
-    }
-
-    .header h1 {
-        color: var(--text-primary);
-        font-size: 3rem;
-        font-weight: 800;
-        margin: 0;
-        letter-spacing: -0.025em;
-        background: linear-gradient(45deg, var(--gradient-start), var(--gradient-end));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .subtitle {
-        color: var(--text-secondary);
-        font-size: 1.25rem;
-        margin-top: 1rem;
-    }
-
-    .main-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-        gap: 2rem;
-    }
-
-    .panel {
-        background: var(--panel-bg);
-        border-radius: 1.25rem;
-        box-shadow: 0 4px 6px -1px var(--shadow-color), 
-                   0 2px 4px -2px var(--shadow-color);
-        overflow: hidden;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 1px solid var(--border-color);
-    }
-
-    .panel:hover {
-        box-shadow: 0 20px 25px -5px var(--shadow-color), 
-                   0 8px 10px -6px var(--shadow-color);
-    }
-
-    .panel-header {
-        background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-        color: white;
-        padding: 1.5rem;
-        position: relative;
-        overflow: hidden;
-        border-radius: 1.25rem 1.25rem 0 0;
-    }
-
-    .panel-header::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1));
-    }
-
-    .input-group, .key-group {
-        padding: 1.5rem;
-        background: var(--panel-bg);
-    }
-
-    .styled-select, input[type="text"], textarea {
-        width: 100%;
-        padding: 0.75rem 1rem;
-        border: 2px solid var(--border-color);
-        border-radius: 0.75rem;
-        background-color: var(--input-bg);
-        color: var(--text-primary);
-        font-size: 1rem;
-        transition: all 0.2s ease;
-    }
-
-    .styled-select:focus, input[type="text"]:focus, textarea:focus {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        outline: none;
-    }
-
-    .button-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-        padding: 1.5rem;
-    }
-
-    .btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        padding: 0.875rem 1.5rem;
-        border-radius: 0.75rem;
-        font-weight: 500;
-        transition: all 0.2s ease;
-        border: none;
-        cursor: pointer;
-    }
-
-    .btn.encrypt {
-        background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-        color: white;
-    }
-
-    .btn.decrypt {
-        background: var(--text-secondary);
-        color: white;
-    }
-
-    .btn:hover {
-        transform: translateY(-2px);
-        filter: brightness(110%);
-    }
-
-    .viz-box {
-        margin: 1.5rem;
-        padding: 1.5rem;
-        border-radius: 0.75rem;
-        background: var(--input-bg);
-        border: 1px solid var(--border-color);
-    }
-    /* Solution Panel */
-    .solution-panel {
-        margin-top: 2rem;
-        display: none;
-    }
-
-    .step {
-        background: var(--input-bg);
-        border-radius: 0.75rem;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        border: 1px solid var(--border-color);
-    }
-
-    .step-number {
-        background: var(--primary-color);
-        color: white;
-        border-radius: 50%;
-        width: 24px;
-        height: 24px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 0.5rem;
-    }
-    /* Statistics Panel */
-    .statistics-panel {
-        margin-top: 2rem;
-    }
-
-    .stat-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1rem;
-    }
-    .stat-card {
-        background: var(--input-bg);
-        border-radius: 0.75rem;
-        padding: 1rem;
-        text-align: center;
-        border: 1px solid var(--border-color);
-    }
-
-    /* Animation for visualization container */
-    .visualization-container {
-        opacity: 0;
-        transform: translateY(20px);
-        animation: fadeIn 0.5s ease forwards;
-    }
-
-    @keyframes fadeIn {
-        to {
-            opacity: 1;
-            transform: translateY(0);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symmetric Ciphers</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Light/Dark mode variables */
+        :root {
+            /* Light theme */
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --background: #f0f7ff;
+            --card-bg: #ffffff;
+            --panel-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --input-bg: #f8fafc;
+            --success: #22c55e;
+            --error: #ef4444;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --gradient-start: #2563eb;
+            --gradient-end: #7c3aed;
         }
-    }
 
-    /* Custom scrollbar */
-    ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-    }
+        /* Dark theme */
+        [data-theme="dark"] {
+            --primary-color: #3b82f6;
+            --primary-hover: #60a5fa;
+            --background: #0f172a;
+            --card-bg: #1e293b;
+            --panel-bg: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+            --input-bg: #273548;
+            --success: #4ade80;
+            --error: #f87171;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --gradient-start: #3b82f6;
+            --gradient-end: #8b5cf6;
+        }
 
-    ::-webkit-scrollbar-track {
-        background: var(--input-bg);
-        border-radius: 4px;
-    }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--background);
+            margin: 0;
+            padding: 20px;
+            color: var(--text-primary);
+            line-height: 1.7;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
 
-    ::-webkit-scrollbar-thumb {
-        background: var(--text-secondary);
-        border-radius: 4px;
-    }
+        /* Theme toggle button */
+        .theme-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.75rem;
+            border-radius: 9999px;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            cursor: pointer;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            transition: all 0.3s ease;
+        }
 
-    ::-webkit-scrollbar-thumb:hover {
-        background: var(--primary-color);
-    }
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
 
-    @media (max-width: 768px) {
         .page-container {
-            padding: 1rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
         }
 
-        .main-container {
-            grid-template-columns: 1fr;
-        }
-
-        .button-container {
-            grid-template-columns: 1fr;
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
         }
 
         .header h1 {
-            font-size: 2rem;
+            color: var(--text-primary);
+            font-size: 3rem;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: -0.025em;
+            background: linear-gradient(45deg, var(--gradient-start), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-    }
-</style>
 
-<button class="theme-toggle" onclick="toggleTheme()">
-    <i class="fas fa-moon"></i>
-</button>
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            margin-top: 1rem;
+        }
 
-<div class="page-container">
-    <header class="header">
-        <h1>Symmetric Ciphers</h1>
-        <p class="subtitle">Advanced Encryption & Decryption Tools</p>
-    </header>
+        .main-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+        }
 
-    <div class="main-container">
-        <!-- Input Panel -->
-        <div class="panel input-panel">
-            <div class="panel-header">
-                <h2>Input Parameters</h2>
-            </div>
-            
-            <div class="input-group">
-                <label for="cipherType">Encryption Method</label>
-                <select id="cipherType" class="styled-select">
-                    <option value="caesar">Caesar Cipher</option>
-                    <option value="vigenere">Vigenère Cipher</option>
-                    <option value="playfair">Playfair Cipher</option>
-                    <option value="single-columnar">Single Columnar</option>
-                    <option value="double-columnar">Double Columnar</option>
-                    <option value="aes">AES-256</option>
-                </select>
-            </div>
+        .panel {
+            background: var(--panel-bg);
+            border-radius: 1.25rem;
+            box-shadow: 0 4px 6px -1px var(--shadow-color), 
+                       0 2px 4px -2px var(--shadow-color);
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--border-color);
+        }
 
-            <div class="input-group">
-                <label for="inputText">Message Content</label>
-                <textarea 
-                    id="inputText" 
-                    placeholder="Enter the message you want to encrypt or decrypt..."
-                    rows="6"
-                ></textarea>
-            </div>
+        .panel:hover {
+            box-shadow: 0 20px 25px -5px var(--shadow-color), 
+                       0 8px 10px -6px var(--shadow-color);
+        }
 
-            <div class="key-container">
-                <div class="key-group">
-                    <label for="key">Encryption Key</label>
-                    <input 
-                        type="text" 
-                        id="key" 
-                        placeholder="Enter your secret key"
-                    >
+        .panel-header {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            border-radius: 1.25rem 1.25rem 0 0;
+        }
+
+        .panel-header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1));
+        }
+
+        .input-group, .key-group {
+            padding: 1.5rem;
+            background: var(--panel-bg);
+        }
+
+        .styled-select, input[type="text"], textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 0.75rem;
+            background-color: var(--input-bg);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .styled-select:focus, input[type="text"]:focus, textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+
+        .button-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            padding: 1.5rem;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn.encrypt {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+        }
+
+        .btn.decrypt {
+            background: var(--text-secondary);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(110%);
+        }
+
+        .viz-box {
+            margin: 1.5rem;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Solution Panel */
+        .solution-panel {
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .step {
+            background: var(--input-bg);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .step-number {
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.5rem;
+        }
+
+        /* Statistics Panel */
+        .statistics-panel {
+            margin-top: 2rem;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card {
+            background: var(--input-bg);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Animation for visualization container */
+        .visualization-container {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--input-bg);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-secondary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+
+        @media (max-width: 768px) {
+            .page-container {
+                padding: 1rem;
+            }
+
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+
+            .button-container {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <div class="page-container">
+        <header class="header">
+            <h1>Symmetric Ciphers</h1>
+            <p class="subtitle">Advanced Encryption & Decryption Tools</p>
+        </header>
+
+        <div class="main-container">
+            <!-- Input Panel -->
+            <div class="panel input-panel">
+                <div class="panel-header">
+                    <h2>Input Parameters</h2>
                 </div>
                 
-                <div class="key-group" id="key2Container" style="display: none;">
-                    <label for="key2">Secondary Key</label>
-                    <input 
-                        type="text" 
-                        id="key2" 
-                        placeholder="Enter secondary key (Double Columnar only)"
-                    >
+                <div class="input-group">
+                    <label for="cipherType">Encryption Method</label>
+                    <select id="cipherType" class="styled-select" onchange="updatePlaceholders(this.value); updateKeyStrength();">
+                        <option value="caesar">Caesar Cipher</option>
+                        <option value="vigenere">Vigenère Cipher</option>
+                        <option value="playfair">Playfair Cipher</option>
+                        <option value="single-columnar">Single Columnar</option>
+                        <option value="double-columnar">Double Columnar</option>
+                        <option value="aes">AES-256</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="inputText">Message Content</label>
+                    <textarea 
+                        id="inputText" 
+                        placeholder="Enter the message you want to encrypt or decrypt..."
+                        rows="6"
+                        oninput="updateStatistics()"
+                    ></textarea>
+                </div>
+
+                <div class="key-container">
+                    <div class="key-group">
+                        <label for="key">Encryption Key</label>
+                        <input 
+                            type="text" 
+                            id="key" 
+                            placeholder="Enter your secret key"
+                            oninput="updateKeyStrength()"
+                        >
+                    </div>
+                    
+                    <div class="key-group" id="key2Container" style="display: none;">
+                        <label for="key2">Secondary Key</label>
+                        <input 
+                            type="text" 
+                            id="key2" 
+                            placeholder="Enter secondary key (Double Columnar only)"
+                        >
+                    </div>
+                </div>
+
+                <div class="button-container">
+                    <button class="btn encrypt" onclick="processCipher('encrypt')">
+                        <i class="fas fa-lock"></i>
+                        <span>Encrypt Message</span>
+                    </button>
+                    <button class="btn decrypt" onclick="processCipher('decrypt')">
+                        <i class="fas fa-unlock"></i>
+                        <span>Decrypt Message</span>
+                    </button>
                 </div>
             </div>
 
-            <div class="button-container">
-                <button class="btn encrypt" onclick="processCipher('encrypt')">
-                    <i class="fas fa-lock"></i>
-                    <span>Encrypt Message</span>
-                </button>
-                <button class="btn decrypt" onclick="processCipher('decrypt')">
-                    <i class="fas fa-unlock"></i>
-                    <span>Decrypt Message</span>
-                </button>
+            <!-- Output Panel -->
+            <div class="panel output-panel">
+                <div class="panel-header">
+                    <h2>Results</h2>
+                </div>
+
+                <div class="result-group">
+                    <label for="result">Processed Output</label>
+                    <textarea 
+                        id="result" 
+                        readonly 
+                        placeholder="Your encrypted/decrypted message will appear here..."
+                        rows="6"
+                    ></textarea>
+                </div>
+
+                <div class="statistics-panel">
+                    <h3>Statistics</h3>
+                    <div class="stat-grid">
+                        <div class="stat-card">
+                            <h4>Key Strength</h4>
+                            <div id="keyStrength">0%</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Character Count</h4>
+                            <div id="charCount">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-container">
+                    <button class="btn encrypt" onclick="showSolution()">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>Show Solution</span>
+                    </button>
+                    <button class="btn decrypt" onclick="copyResult()">
+                        <i class="fas fa-copy"></i>
+                        <span>Copy Result</span>
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- Output Panel -->
-        <div class="panel output-panel">
+        <!-- Solution Panel -->
+        <div id="solutionPanel" class="panel solution-panel">
             <div class="panel-header">
-                <h2>Results</h2>
+                <h2>Solution Steps</h2>
             </div>
-
-            <div class="result-group">
-                <label for="result">Processed Output</label>
-                <textarea 
-                    id="result" 
-                    readonly 
-                    placeholder="Your encrypted/decrypted message will appear here..."
-                    rows="6"
-                ></textarea>
-            </div>
-
-            <div class="statistics-panel">
-                <h3>Statistics</h3>
-                <div class="stat-grid">
-                   
-                    <div class="stat-card">
-                        <h4>Key Strength</h4>
-                        <div id="keyStrength">0%</div>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Character Count</h4>
-                        <div id="charCount">0</div>
-                    </div>
+            <div class="step-container">
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <span class="step-description">Input Processing</span>
+                    <div id="step1Details"></div>
+                </div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <span class="step-description">Key Generation</span>
+                    <div id="step2Details"></div>
+                </div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <span class="step-description">Encryption/Decryption Process</span>
+                    <div id="step3Details"></div>
+                </div>
+                <div class="step">
+                    <span class="step-number">4</span>
+                    <span class="step-description">Final Output</span>
+                    <div id="step4Details"></div>
                 </div>
             </div>
-
-            <div class="button-container">
-                <button class="btn encrypt"  onclick="showSolution()">
-                    <i class="fas fa-lightbulb"></i>
-                    <span>Show Solution</span>
-                </button>
-                <button class="btn decrypt" onclick="copyResult()">
-                    <i class="fas fa-copy"></i>
-                    <span>Copy Result</span>
-                </button>
-            </div>
         </div>
     </div>
 
-      <!-- Solution Panel -->
-      <div id="solutionPanel" class="panel solution-panel">
-        <div class="panel-header">
-            <h2>Solution Steps</h2>
-        </div>
-        <div class="step-container">
-            <div class="step">
-                <span class="step-number">1</span>
-                <span class="step-description">Input Processing</span>
-                <div id="step1Details"></div>
-            </div>
-            <div class="step">
-                <span class="step-number">2</span>
-                <span class="step-description">Key Generation</span>
-                <div id="step2Details"></div>
-            </div>
-            <div class="step">
-                <span class="step-number">3</span>
-                <span class="step-description">Encryption/Decryption Process</span>
-                <div id="step3Details"></div>
-            </div>
-            <div class="step">
-                <span class="step-number">4</span>
-                <span class="step-description">Final Output</span>
-                <div id="step4Details"></div>
-            </div>
-        </div>
+    <div class="visualization-container">
+        <div id="gridContainer" class="viz-box"></div>
+        <div id="singleGridContainer" class="viz-box"></div>
+        <div id="aesInfoContainer" class="viz-box"></div>
     </div>
-</div>
-</div>
 
-
-            <div class="visualization-container">
-                <div id="gridContainer" class="viz-box"></div>
-                <div id="singleGridContainer" class="viz-box"></div>
-                <div id="aesInfoContainer" class="viz-box"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-function toggleTheme() {
-    const body = document.body;
-    const currentTheme = body.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    body.setAttribute('data-theme', newTheme);
-    
-    // Update theme toggle icon
-    const icon = document.querySelector('.theme-toggle i');
-    icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-}
-
-function copyResult() {
-    const result = document.getElementById('result');
-    result.select();
-    document.execCommand('copy');
-    showSuccess('Result copied to clipboard');
-}
-
-function showSuccess(message) {
-    // Implement success notification
-    console.log(message); // Replace with better UI notification
-}
-
-// Utility Functions
-function showError(message) {
-    // Implement error notification
-    alert(message); // Replace with better UI notification
-}
-
-function updateSolutionSteps(method, input, key) {
-    const steps = generateSolutionSteps(method, input, key);
-    Object.entries(steps).forEach(([step, content]) => {
-        document.getElementById(`step${step}Details`).innerHTML = content;
-    });
-}
-
-// Solution Display
-function showSolution() {
-    const cipherType = document.getElementById('cipherType').value;
-    const input = document.getElementById('inputText').value;
-    const key = document.getElementById('key').value;
-    
-    document.getElementById('solutionPanel').style.display = 'block';
-    updateSolutionSteps(cipherType, input, key);
-}
-
-function updateKeyStrength() {
-    const key = document.getElementById('key').value;
-    const cipherType = document.getElementById('cipherType').value;
-    let strength = 0;
-    
-    // Basic key strength calculation
-    if (key.length >= 8) strength += 25;
-    if (/[A-Z]/.test(key)) strength += 25;
-    if (/[a-z]/.test(key)) strength += 25;
-    if (/[0-9]/.test(key)) strength += 25;
-    
-    // Cipher-specific adjustments
-    switch(cipherType) {
-        case 'aes':
-            strength = key.length === 32 ? 100 : Math.min(strength, 50);
-            break;
-        case 'caesar':
-            strength = Math.min(strength, 30); // Caesar cipher is inherently weak
-            break;
-    }
-    
-    document.getElementById('keyStrength').textContent = `${strength}%`;
-}
-
-// Statistics and Analysis
-function updateStatistics(processingTime = 0) {
-    const input = document.getElementById('inputText').value;
-    document.getElementById('charCount').textContent = input.length;
-    document.getElementById('processingTime').textContent = `${Math.round(processingTime)} ms`;
-    updateKeyStrength();
-}
-
-function validateKey(key, cipherType) {
-    if (!key) return false;
-    
-    switch(cipherType) {
-        case 'caesar':
-            return /^\d+$/.test(key) && parseInt(key) >= 0 && parseInt(key) <= 25;
-        case 'vigenere':
-        case 'playfair':
-            return /^[a-zA-Z]+$/.test(key);
-        case 'aes':
-            return key.length === 32;
-        default:
-            return key.length > 0;
-    }
-}
-
-function validateInput(input, cipherType) {
-    if (!input) return false;
-    
-    switch(cipherType) {
-        case 'caesar':
-        case 'vigenere':
-            return /^[a-zA-Z\s]*$/.test(input);
-        case 'playfair':
-            return /^[a-zA-Z\s]*$/.test(input) && input.length % 2 === 0;
-        case 'aes':
-            return true; // AES can handle any input
-        default:
-            return true;
-    }
-}
-function processVigenereCipher(text, key, action) {
-    const keyRepeated = key.toUpperCase().repeat(Math.ceil(text.length / key.length));
-    
-    return text.split('').map((char, i) => {
-        if (!/[a-zA-Z]/.test(char)) return char;
-        
-        const code = char.charCodeAt(0);
-        const isUpperCase = code >= 65 && code <= 90;
-        const base = isUpperCase ? 65 : 97;
-        const keyShift = keyRepeated[i].charCodeAt(0) - 65;
-        
-        let newCode = action === 'encrypt' ?
-            ((code - base + keyShift) % 26) + base :
-            ((code - base - keyShift + 26) % 26) + base;
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', newTheme);
             
-        return String.fromCharCode(newCode);
-    }).join('');
-}// Cipher Implementations
-function processCaesarCipher(text, key, action) {
-    const shift = parseInt(key) % 26;
-    return text.split('').map(char => {
-        if (!/[a-zA-Z]/.test(char)) return char;
-        
-        const code = char.charCodeAt(0);
-        const isUpperCase = code >= 65 && code <= 90;
-        const base = isUpperCase ? 65 : 97;
-        
-        let newCode = action === 'encrypt' ?
-            ((code - base + shift) % 26) + base :
-            ((code - base - shift + 26) % 26) + base;
-            
-        return String.fromCharCode(newCode);
-    }).join('');
-}
-
-function updatePlaceholders(cipherType) {
-    const keyInput = document.getElementById('key');
-    switch(cipherType) {
-        case 'caesar':
-            keyInput.placeholder = 'Enter shift value (0-25)';
-            break;
-        case 'vigenere':
-            keyInput.placeholder = 'Enter keyword (letters only)';
-            break;
-        case 'playfair':
-            keyInput.placeholder = 'Enter keyword for Playfair matrix';
-            break;
-        case 'aes':
-            keyInput.placeholder = 'Enter 32 character key';
-            break;
-        default:
-            keyInput.placeholder = 'Enter encryption key';
-    }
-}
-
-// Cipher Processing
-function processCipher(action) {
-    const startTime = performance.now();
-    const cipherType = document.getElementById('cipherType').value;
-    const input = document.getElementById('inputText').value;
-    const key = document.getElementById('key').value;
-    const key2 = document.getElementById('key2')?.value;
-    
-    if (!validateInput(input, cipherType)) {
-        showError('Invalid input for selected cipher');
-        return;
-    }
-    
-    if (!validateKey(key, cipherType)) {
-        showError('Invalid key for selected cipher');
-        return;
-    }
-    
-    let result;
-    try {
-        switch(cipherType) {
-            case 'caesar':
-                result = processCaesarCipher(input, key, action);
-                break;
-            case 'vigenere':
-                result = processVigenereCipher(input, key, action);
-                break;
-            case 'playfair':
-                result = processPlayfairCipher(input, key, action);
-                break;
-            case 'single-columnar':
-                result = processColumnarCipher(input, key, action, false);
-                break;
-            case 'double-columnar':
-                result = processColumnarCipher(input, key, action, true, key2);
-                break;
-            case 'aes':
-                result = processAESCipher(input, key, action);
-                break;
+            const icon = document.querySelector('.theme-toggle i');
+            icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
         }
-        
-        document.getElementById('result').value = result;
-        updateStatistics(performance.now() - startTime);
-        showSuccess(`${action === 'encrypt' ? 'Encryption' : 'Decryption'} successful`);
-        
-    } catch (error) {
-        showError('Processing error: ' + error.message);
-    }
-}
 
-</script>
+        function copyResult() {
+            const result = document.getElementById('result');
+            result.select();
+            document.execCommand('copy');
+            showSuccess('Result copied to clipboard');
+        }
+
+        function showSuccess(message) {
+            console.log(message); // Replace with a better UI notification
+        }
+
+        function showError(message) {
+            alert(message); // Replace with a better UI notification
+        }
+
+        function updateSolutionSteps(method, input, key) {
+            const steps = generateSolutionSteps(method, input, key);
+            Object.entries(steps).forEach(([step, content]) => {
+                document.getElementById(`step${step}Details`).innerHTML = content;
+            });
+        }
+
+        function showSolution() {
+            const cipherType = document.getElementById('cipherType').value;
+            const input = document.getElementById('inputText').value;
+            const key = document.getElementById('key').value;
+            
+            document.getElementById('solutionPanel').style.display = 'block';
+            updateSolutionSteps(cipherType, input, key);
+        }
+
+        function updateKeyStrength() {
+            const key = document.getElementById('key').value;
+            const cipherType = document.getElementById('cipherType').value;
+            let strength = 0;
+            
+            if (key.length >= 8) strength += 25;
+            if (/[A-Z]/.test(key)) strength += 25;
+            if (/[a-z]/.test(key)) strength += 25;
+            if (/[0-9]/.test(key)) strength += 25;
+            
+            switch(cipherType) {
+                case 'aes':
+                    strength = key.length === 32 ? 100 : Math.min(strength, 50);
+                    break;
+                case 'caesar':
+                    strength = Math.min(strength, 30);
+                    break;
+            }
+            
+            document.getElementById('keyStrength').textContent = `${strength}%`;
+        }
+
+        function updateStatistics() {
+            const input = document.getElementById('inputText').value;
+            document.getElementById('charCount').textContent = input.length;
+            updateKeyStrength();
+        }
+
+        function validateKey(key, cipherType) {
+            if (!key) return false;
+            
+            switch(cipherType) {
+                case 'caesar':
+                    return /^\d+$/.test(key) && parseInt(key) >= 0 && parseInt(key) <= 25;
+                case 'vigenere':
+                case 'playfair':
+                    return /^[a-zA-Z]+$/.test(key);
+                case 'aes':
+                    return key.length === 32;
+                default:
+                    return key.length > 0;
+            }
+        }
+
+        function validateInput(input, cipherType) {
+            if (!input) return false;
+            
+            switch(cipherType) {
+                case 'caesar':
+                case 'vigenere':
+                    return /^[a-zA-Z\s]*$/.test(input);
+                case 'playfair':
+                    return /^[a-zA-Z\s]*$/.test(input) && input.length % 2 === 0;
+                case 'aes':
+                    return true;
+                default:
+                    return true;
+            }
+        }
+
+        function processVigenereCipher(text, key, action) {
+            const keyRepeated = key.toUpperCase().repeat(Math.ceil(text.length / key.length));
+            
+            return text.split('').map((char, i) => {
+                if (!/[a-zA-Z]/.test(char)) return char;
+                
+                const code = char.charCodeAt(0);
+                const isUpperCase = code >= 65 && code <= 90;
+                const base = isUpperCase ? 65 : 97;
+                const keyShift = keyRepeated[i].charCodeAt(0) - 65;
+                
+                let newCode = action === 'encrypt' ?
+                    ((code - base + keyShift) % 26) + base :
+                    ((code - base - keyShift + 26) % 26) + base;
+                    
+                return String.fromCharCode(newCode);
+            }).join('');
+        }
+
+        function processCaesarCipher(text, key, action) {
+            const shift = parseInt(key) % 26;
+            return text.split('').map(char => {
+                if (!/[a-zA-Z]/.test(char)) return char;
+                
+                const code = char.charCodeAt(0);
+                const isUpperCase = code >= 65 && code <= 90;
+                const base = isUpperCase ? 65 : 97;
+                
+                let newCode = action === 'encrypt' ?
+                    ((code - base + shift) % 26) + base :
+                    ((code - base - shift + 26) % 26) + base;
+                    
+                return String.fromCharCode(newCode);
+            }).join('');
+        }
+
+        function updatePlaceholders(cipherType) {
+            const keyInput = document.getElementById('key');
+            switch(cipherType) {
+                case 'caesar':
+                    keyInput.placeholder = 'Enter shift value (0-25)';
+                    break;
+                case 'vigenere':
+                    keyInput.placeholder = 'Enter keyword (letters only)';
+                    break;
+                case 'playfair':
+                    keyInput.placeholder = 'Enter keyword for Playfair matrix';
+                    break;
+                case 'aes':
+                    keyInput.placeholder = 'Enter 32 character key';
+                    break;
+                default:
+                    keyInput.placeholder = 'Enter encryption key';
+            }
+        }
+
+        function processCipher(action) {
+            const startTime = performance.now();
+            const cipherType = document.getElementById('cipherType').value;
+            const input = document.getElementById('inputText').value;
+            const key = document.getElementById('key').value;
+            const key2 = document.getElementById('key2')?.value;
+            
+            if (!validateInput(input, cipherType)) {
+                showError('Invalid input for selected cipher');
+                return;
+            }
+            
+            if (!validateKey(key, cipherType)) {
+                showError('Invalid key for selected cipher');
+                return;
+            }
+            
+            let result;
+            try {
+                switch(cipherType) {
+                    case 'caesar':
+                        result = processCaesarCipher(input, key, action);
+                        break;
+                    case 'vigenere':
+                        result = processVigenereCipher(input, key, action);
+                        break;
+                    // Implement other ciphers as needed
+                    // case 'playfair':
+                    //     result = processPlayfairCipher(input, key, action);
+                    //     break;
+                    // case 'single-columnar':
+                    //     result = processColumnarCipher(input, key, action, false);
+                    //     break;
+                    // case 'double-columnar':
+                    //     result = processColumnarCipher(input, key, action, true, key2);
+                    //     break;
+                    // case 'aes':
+                    //     result = processAESCipher(input, key, action);
+                    //     break;
+                }
+                
+                document.getElementById('result').value = result;
+                updateStatistics(performance.now() - startTime);
+                showSuccess(`${action === 'encrypt' ? 'Encryption' : 'Decryption'} successful`);
+                
+            } catch (error) {
+                showError('Processing error: ' + error.message);
+            }
+        }
+
+        // Add any additional cipher processing functions and logic as needed
+    </script>
+</body>
+</html>
 {% endblock %}

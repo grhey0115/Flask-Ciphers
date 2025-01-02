@@ -39,6 +39,15 @@ async function processCipher(action) {
                     <pre>${data.visualization.first_grid_str}</pre>
                     <pre>${data.visualization.second_grid_str}</pre>
                 `;
+            } else if (cipherType === 'aes' && data.visualization) {
+                const aesInfoContainer = document.getElementById('aesInfoContainer');
+                if (aesInfoContainer) {
+                    aesInfoContainer.style.display = 'block';
+                    aesInfoContainer.innerHTML = `
+                        <div class="viz-title">AES Configuration:</div>
+                        <pre>${data.visualization.aes_info}</pre>
+                    `;
+                }
             }
         } else {
             alert('Error: ' + (data.error || 'Unknown error'));
@@ -185,5 +194,70 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('key2').value = ''; // Clear second key value
         }
     });
+});
+
+function validateKey(key, cipherType) {
+    if (!key) return false;
+    
+    switch(cipherType) {
+        case 'aes':
+            // For AES-256, we need exactly 32 characters
+            if (key.length !== 32) {
+                showError('AES-256 requires exactly 32 characters for the key');
+                return false;
+            }
+            return true;
+        // ... other cases remain the same ...
+    }
+}
+
+// Add this helper function for AES key handling
+function processAESCipher(text, key, action) {
+    // Ensure the key is exactly 32 characters by padding or truncating
+    let processedKey = key;
+    if (key.length < 32) {
+        processedKey = key.padEnd(32, '0');  // Pad with zeros if too short
+    } else if (key.length > 32) {
+        processedKey = key.slice(0, 32);     // Truncate if too long
+    }
+
+    // Make the AJAX call to the server
+    return fetch(`/${action}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            text: text,
+            key: processedKey,
+            cipher_type: 'aes'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            throw new Error(data.error);
+        }
+        
+        // Handle visualization if available
+        if (data.visualization && data.visualization.aes_info) {
+            const aesInfoContainer = document.getElementById('aesInfoContainer');
+            if (aesInfoContainer) {
+                aesInfoContainer.style.display = 'block';
+                aesInfoContainer.innerHTML = `<pre>${data.visualization.aes_info}</pre>`;
+            }
+        }
+        
+        return data.result;
+    });
+}
+
+// Update the key input placeholder for AES
+document.getElementById('cipherType').addEventListener('change', function(e) {
+    const keyInput = document.getElementById('key');
+    if (e.target.value === 'aes') {
+        keyInput.placeholder = 'Enter 32 character key (will be padded/truncated if needed)';
+    }
+    // ... rest of the existing change handler ...
 });
 
