@@ -305,6 +305,43 @@
                 font-size: 2rem;
             }
         }
+
+        .viz-box {
+            margin: 1.5rem;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            background: var(--aes-info-bg);
+            border: 1px solid var(--aes-info-border);
+            color: var(--aes-info-text);
+        }
+
+        #aesInfoContainer {
+            display: none;
+        }
+
+        #aesInfoContainer.visible {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+       
+        .aes-key-info {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            color: var(--text-primary);
+        }
+
+        .aes-warning {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--error);
+            color: var(--error);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -599,6 +636,7 @@
 
         function updatePlaceholders(cipherType) {
             const keyInput = document.getElementById('key');
+            const aesInfoContainer = document.getElementById('aesInfoContainer');
             switch(cipherType) {
                 case 'caesar':
                     keyInput.placeholder = 'Enter shift value (0-25)';
@@ -611,9 +649,11 @@
                     break;
                 case 'aes':
                     keyInput.placeholder = 'Enter 32 character key';
+                    aesInfoContainer.classList.add('visible');
                     break;
                 default:
                     keyInput.placeholder = 'Enter encryption key';
+                    aesInfoContainer.classList.remove('visible');
             }
         }
 
@@ -623,6 +663,7 @@
             const input = document.getElementById('inputText').value;
             const key = document.getElementById('key').value;
             const key2 = document.getElementById('key2')?.value;
+            
             
             if (!validateInput(input, cipherType)) {
                 showError('Invalid input for selected cipher');
@@ -667,7 +708,171 @@
             }
         }
 
-        // Add any additional cipher processing functions and logic as needed
+        function generateSolutionSteps(method, input, key) {
+    let steps = {};
+    
+    // Step 1: Input Processing
+    steps[1] = `
+        <div class="step-details">
+            <p><strong>Original Input:</strong> ${input}</p>
+            <p><strong>Input Length:</strong> ${input.length} characters</p>
+            <p><strong>Cipher Method:</strong> ${method}</p>
+        </div>
+    `;
+
+    // Step 2: Key Generation/Processing
+    let keyInfo = '';
+    switch(method) {
+        case 'caesar':
+            keyInfo = `Shift value: ${key} positions`;
+            break;
+        case 'vigenere':
+            keyInfo = `Key: "${key}" (repeated to match input length: "${key.repeat(Math.ceil(input.length/key.length)).slice(0, input.length)}")`;
+            break;
+        case 'single-columnar':
+            keyInfo = `Key length: ${key.length}, Creating ${Math.ceil(input.length/key.length)} rows`;
+            break;
+        case 'double-columnar':
+            const key2 = document.getElementById('key2').value;
+            keyInfo = `First key length: ${key.length}, Second key length: ${key2.length}`;
+            break;
+        case 'aes':
+            keyInfo = `AES-256 key length: ${key.length} characters`;
+            break;
+        default:
+            keyInfo = `Key: "${key}"`;
+    }
+    steps[2] = `
+        <div class="step-details">
+            <p><strong>Key Processing:</strong></p>
+            <p>${keyInfo}</p>
+        </div>
+    `;
+
+    // Step 3: Encryption/Decryption Process
+    let processInfo = '';
+    switch(method) {
+        case 'caesar':
+            processInfo = `Shifting each letter by ${key} positions in the alphabet`;
+            break;
+        case 'vigenere':
+            processInfo = 'Adding key values to each character position (modulo 26)';
+            break;
+        case 'single-columnar':
+            processInfo = 'Arranging text in grid pattern and reading off by columns';
+            break;
+        case 'double-columnar':
+            processInfo = 'Performing two rounds of columnar transposition';
+            break;
+        case 'aes':
+            processInfo = 'Applying AES-256 encryption with block cipher';
+            break;
+        default:
+            processInfo = 'Processing input with selected cipher method';
+    }
+    steps[3] = `
+        <div class="step-details">
+            <p><strong>Process Details:</strong></p>
+            <p>${processInfo}</p>
+            ${method === 'caesar' || method === 'vigenere' ? 
+                `<p>Character-by-character transformation using modular arithmetic</p>` : ''}
+        </div>
+    `;
+
+    // Step 4: Final Output
+    const result = document.getElementById('result').value;
+    steps[4] = `
+        <div class="step-details">
+            <p><strong>Final Output:</strong> ${result}</p>
+            <p><strong>Output Length:</strong> ${result.length} characters</p>
+            <p><strong>Character Distribution:</strong></p>
+            <div class="char-distribution">
+                ${generateCharDistribution(result)}
+            </div>
+        </div>
+    `;
+
+    return steps;
+}
+
+// Helper function to generate character distribution visualization
+function generateCharDistribution(text) {
+    const charCount = {};
+    text.split('').forEach(char => {
+        if (/[a-zA-Z]/.test(char)) {
+            charCount[char.toUpperCase()] = (charCount[char.toUpperCase()] || 0) + 1;
+        }
+    });
+
+    let distribution = '';
+    Object.entries(charCount)
+        .sort((a, b) => b[1] - a[1])
+        .forEach(([char, count]) => {
+            const percentage = ((count / text.length) * 100).toFixed(1);
+            distribution += `
+                <div class="char-stat">
+                    <span class="char">${char}</span>: 
+                    <span class="count">${count}</span>
+                    <span class="percentage">(${percentage}%)</span>
+                </div>
+            `;
+        });
+
+    return distribution;
+}
+
+// Add these styles to your existing CSS
+const newStyles = `
+    .step-details {
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        background: var(--input-bg);
+        border-radius: 0.5rem;
+    }
+
+    .char-distribution {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .char-stat {
+        padding: 0.25rem;
+        background: var(--card-bg);
+        border-radius: 0.25rem;
+        font-size: 0.875rem;
+    }
+
+    .solution-panel {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+    }
+
+    .solution-panel.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+`;
+
+// Update the showSolution function
+function showSolution() {
+    const cipherType = document.getElementById('cipherType').value;
+    const input = document.getElementById('inputText').value;
+    const key = document.getElementById('key').value;
+    
+    const solutionPanel = document.getElementById('solutionPanel');
+    solutionPanel.style.display = 'block';
+    
+    // Add visible class after a short delay to trigger animation
+    setTimeout(() => {
+        solutionPanel.classList.add('visible');
+    }, 50);
+    
+    updateSolutionSteps(cipherType, input, key);
+}
+
     </script>
 </body>
 </html>
